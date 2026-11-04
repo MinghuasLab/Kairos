@@ -10,11 +10,8 @@ Evaluations demonstrate that Kairos achieves up to 2.19$\times$ speedup in GEMM 
 02/11/2026 ✨: "Kairos: Switching Mixed-Precision GEMM Kernels for Dynamic AI Workloads" is accepted by HPCA 2027.
 
 # Framework Architecture
+<img src="images/overview.png" width = 60%>
 <!-- ![Overview of Kairos](images/overview.png)  -->
-<center class="half">
-<img src="images/overview.png" width="500"/>
-<img src="images/ablation/scatter_hbm_time.png" width="380"/>
-</center>
 
 Kairos consists of three core components.
 
@@ -88,12 +85,39 @@ We evaluate end‑to‑end LLM serving on Llama3‑8B with input length 1024, ou
 As batch size grows, the prefill stage becomes increasingly compute‑bound.
 Kairos adapts by switching to compute‑efficient kernels, closely tracking the latency of \(W8A8\). 
 It consistently outperforms \(W4A16\), achieving an average speedup of \(1.60\times\) over the \(W4A16\) kernel from TensorRT-LLM and \(1.54\times\) over the MARLIN \(W4A16\).
-{Since Formula~\ref{eq:best_static} is equivalent to solving the maximum throughput across different batch size, the selection of the optimal static baseline will be biased towards the decoding phase.
-Kairos achieves an average speedup of \(1.54\times\) over the Best-Static.}
+Since Best-Static is equivalent to solving the maximum throughput across different batch size, the selection of the optimal static baseline will be biased towards the decoding phase.
+Kairos achieves an average speedup of \(1.54\times\) over the Best-Static.
 Compared to PMPD, Kairos delivers a \(1.24\times\) speedup.
 
 **TPOT and Throughput (Decode).**
 In decode phase, Kairos consistently achieves the lowest per‑token latency and the highest throughput across all batch sizes. 
-It delivers an average throughput speedup of \(1.09\times\) over both \(W4A16\) kernel from TensorRT-LLM and MARLIN, \(1.18\times\) over QServe, \(1.14\times\) over \(W8A8\) kernel from TensorRT-LLM, and \(1.12\times\) over PMPD, and \textbf{\(1.07\times\) over Best-Static.}
+It delivers an average throughput speedup of \(1.09\times\) over both \(W4A16\) kernel from TensorRT-LLM and MARLIN, \(1.18\times\) over QServe, \(1.14\times\) over \(W8A8\) kernel from TensorRT-LLM, and \(1.12\times\) over PMPD, and \(1.07\times\) over Best-Static.
 These results further confirm that runtime mpGEMM kernel switching effectively harnesses workload dynamism, not only across different input lengths but also across varying batch sizes.
 
+## Ablation
+<img src="images/ablation/scatter_hbm_time.png" width = 60%>
+<!-- ![Trade-off](images/ablation/scatter_hbm_time.png) -->
+To isolate the benefit of dynamic switching, the fidelity of LUT-based decisions, and the time--memory tradeoff, we fix the kernel portfolio, activation matching, GEMV/GEMM thresholds, and runtime framework across all configurations. 
+We compare five configurations:
+
+(1) Best Static: the strongest per-layer static policy.
+It selects one fixed kernel for each layer across all \(M\).
+It represents the upper bound achievable without dynamic switching.
+
+(2) Oracle: dynamic selection using the measured fastest kernel for each \(M\), with all target weight formats resident in HBM. 
+It gives an upper bound of dynamic switching while ignoring format-conversion costs and memory.
+
+(3) LUT-Selection: dynamic per-\(M\) selection using the offline LUT, with all target weights resident. 
+It measures the fidelity of LUT-based decisions relative to Oracle.
+
+(4) Simple-Policy: a phase-based heuristic that selects one best kernel for prefilling and one for decoding per layer, and keeps all required weight formats
+resident in HBM. 
+
+(5) Full Kairos: LUT-based selection and online conversion from the 4-bit base representation. 
+It stores only 4-bit weights in HBM and generates other formats on demand.
+
+Oracle achieves the lowest latency but the highest memory (2.45$\times$ FP16), confirming that fine-grained switching without format management is memory-prohibitive.
+LUT-Selection is only 1.7\% slower than Oracle, demonstrating high LUT fidelity, and requires lower memory because Oracle selects measured-best kernels outside the offline profiling set.
+Simple-Policy runs 2.3\% faster than Kairos but occupies 2.8$\times$ more memory. 
+Online weight conversion accounts for only 5.4\% of Kairos's total execution time. 
+With just 5\% more memory than static W4A16, Kairos achieves 93\% of Oracle's optimal performance, yielding an excellent time–memory trade-off.
