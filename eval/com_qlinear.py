@@ -152,6 +152,30 @@ if __name__ == '__main__':
             sum_latency.append(record[i][0][j] * 2 + record[i][1][j]* 2 + record[i][2][j] * 2 + record[i][3][j])
         sum_lat.append(sum_latency)
     
+    '''
+    Select the best static format for each layer
+    record[kenerl_type][shape][M]
+    kernel_layer_i = arg_min(Σ_m speedup(record[k][i][m]))
+    '''
+    print('-'*20)
+    best_kernel_for_shape = {}
+    for s_i in range(4):
+        max_sum_speedup = 0; max_shape_id = 0
+        for i in range(0, len(kernel_name_list)-1):
+            cur_sum_speedup = 0
+            for j in range(len(record[0][0])):
+                cur_sum_speedup +=  record[0][s_i][j]/record[i][s_i][j]
+            if cur_sum_speedup > max_sum_speedup:
+                max_sum_speedup = cur_sum_speedup
+                max_shape_id = i
+        best_kernel_for_shape[s_i] = max_shape_id
+        print(f'Best kernel for shape ({shape_list[s_i][0]}, {shape_list[s_i][1]}): {kernel_name_list[max_shape_id]}')
+    print('-'*20)
+    BSL = []
+    for j in range(len(record[0][0])):
+        BSL.append(record[best_kernel_for_shape[0]][0][j] * 2 + record[best_kernel_for_shape[1]][1][j]* 2\
+             + record[best_kernel_for_shape[2]][2][j] * 2 + record[best_kernel_for_shape[3]][3][j])
+    
     def cal_average_speedup(a,b):
         s = 0
         for idx in range(len(a)):
@@ -165,6 +189,8 @@ if __name__ == '__main__':
     print(f"Speedup to awq {sp2awq}")
     print(f"Speedup to marlin {sp2marlin}")
     print(f"Speedup to smq {sp2smq}")
+    sp2bsl = cal_average_speedup(BSL[1:5], sum_lat[6][1:5])
+    print(f"Speedup to BSL {sp2bsl}")
     print('--------------------------')
     sp2qserve = cal_average_speedup(sum_lat[1][5:9], sum_lat[6][5:9])
     sp2awq = cal_average_speedup(sum_lat[3][5:9], sum_lat[6][5:9])
@@ -174,6 +200,8 @@ if __name__ == '__main__':
     print(f"Speedup to awq {sp2awq}")
     print(f"Speedup to marlin {sp2marlin}")
     print(f"Speedup to smq {sp2smq}")
+    sp2bsl = cal_average_speedup(BSL[5:9], sum_lat[6][5:9])
+    print(f"Speedup to BSL {sp2bsl}")
     print('--------------------------')
     
     plt.figure(figsize=(6, 2))
@@ -189,6 +217,7 @@ if __name__ == '__main__':
     plt.bar(p - 0.5*width, sum_lat[1][1:5],  width, label='W4A8 (Qserve)',  color='#fdae61')
     plt.bar(p + 0.5*width, sum_lat[5][1:5],  width, label='W8A8 (SmoothQuant)',  color='#abd9e9')
     plt.bar(p + 1.5*width, sum_lat[6][1:5],       width, label='Kairos',         color='#d7191c')
+    # plt.bar(p + 2.5*width, BSL[1:5],       width, label='BSL',         color='g')
 
     plt.ylabel('Latency', fontsize=12)
     # plt.legend(ncol=4, loc='upper left', fontsize=12, handletextpad=0.3, columnspacing=0.7, handlelength=1, bbox_to_anchor=(0.15, 1.15), frameon=False)
@@ -202,15 +231,14 @@ if __name__ == '__main__':
     plt.bar(p - 0.5*width, sum_lat[1][5:9],  width, label='W4A8 (Qserve)',  color='#fdae61')
     plt.bar(p + 0.5*width, sum_lat[5][5:9],  width, label='W8A8 (SmoothQuant)',  color='#abd9e9')
     plt.bar(p + 1.5*width, sum_lat[6][5:9],       width, label='Kairos',         color='#d7191c')
+    # plt.bar(p + 2.5*width, BSL[5:9],       width, label='BSL',         color='g')
 
     plt.xlabel('Input dimension M', fontsize=12)
     plt.xticks(x, input_len_s[5:9])
     
-
-
     plt.grid(axis='y', alpha=0.3)
     plt.tight_layout()
-    plt.savefig('fig_compound_gemm.pdf', dpi=150)
-    # plt.savefig('tmp.png', dpi=150)
-    plt.savefig('fig_compound_gemm_'+model_type+'.png', dpi=150)
+    # plt.savefig('./images/com_qlinear/fig_compound_gemm.pdf', dpi=150)
+    plt.savefig('tmp.png', dpi=150)
+    # plt.savefig('./images/com_qlinear/fig_compound_gemm_'+model_type+'.png', dpi=150)
     # plt.show()

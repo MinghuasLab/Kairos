@@ -39,6 +39,11 @@ def quantize_model(model, init_only=False, _quant_config=None):
                 quant_type = _quant_config[layer_idx][name]
             else:   # Select quant linear type here.
                 quant_type = quant_strategy
+                if quant_strategy == 'Best-Static':
+                    if 'mlp' in name:
+                        quant_type = 'W4A16Linear_Marlin'
+                    else:
+                        quant_type = 'W4A16Linear'
                 quant_config[layer_idx][name] = quant_type
             # print(f'layer{layer_idx:2d} : {name}')
             quant_func = LinearQuantConfig(quant_type).from_module

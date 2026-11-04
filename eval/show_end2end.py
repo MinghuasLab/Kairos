@@ -3,7 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 from utils.color_print import color_text
 
-model_type = ['llama', 'qwen']
+# model_type = ['llama', 'qwen']
+model_type = ['llama']
 model_name = ['LLaMa3 8B', 'Qwen2.5 7B']
 quant_type = ['W8A8Linear', 'W4A16Linear', 'W4A16Linear_Marlin', 'W4A8Linear', 'W4A8Linear_QQQ', 'DynamicLinear', 'None']
 
@@ -53,10 +54,10 @@ for idx in range(len(model_type)):
     # plt.grid(True)
     plt.ylim(1000)
     # plt.savefig(f'./{model}_end2end.svg', format='svg', dpi=300, bbox_inches='tight')
-plt.savefig(f'./end2end.svg', format='svg', dpi=300, bbox_inches='tight')
+plt.savefig(f'./tmp.png', dpi=300, bbox_inches='tight')
 # plt.legend(ncol=6, loc='upper center', fontsize=18, frameon=False)
 plt.legend(ncol=6, loc='center', fontsize=18, handletextpad=0.3, columnspacing=0.7, handlelength=1.2, bbox_to_anchor=(-0.15, 1.1), frameon=False)
-plt.show()
+# plt.show()
 
 
 # for i in range(len(input_len)):

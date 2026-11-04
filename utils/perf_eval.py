@@ -193,7 +193,7 @@ def eval_perf(model, tokenizer, inputs, ttft_times=10, max_new_tokens=100):
     for _ in range(warmup_steps):
         _ = model.generate(
             **inputs,
-            max_new_tokens=max_new_tokens,
+            max_new_tokens=50,
             max_length = None,
             pad_token_id=tokenizer.eos_token_id,
             eos_token_id=tokenizer.eos_token_id
@@ -234,7 +234,7 @@ def eval_perf(model, tokenizer, inputs, ttft_times=10, max_new_tokens=100):
 
 @torch.no_grad
 def eval_batch_perf(model, tokenizer, input_seq_len, batch_size, ttft_times=10, max_new_tokens=100):
-    input_ids = torch.randint(1,12, (batch_size, input_seq_len)).to(device)
+    input_ids = torch.randint(100,111, (batch_size, input_seq_len)).to(device)
     attention_mask = torch.ones_like(input_ids).to(device)
 
     warmup_steps = 5
@@ -277,7 +277,7 @@ def eval_batch_perf(model, tokenizer, input_seq_len, batch_size, ttft_times=10, 
 
 @torch.no_grad
 def eval_perf_v3(model, tokenizer, inputs, ttft_times=10, max_new_tokens=100, batch_size=1):
-    warmup_steps = 5
+    warmup_steps = 20
     for _ in range(warmup_steps):
         model.generate(
             **inputs,
@@ -319,7 +319,7 @@ def eval_perf_v3(model, tokenizer, inputs, ttft_times=10, max_new_tokens=100, ba
         )
     t1 = time.perf_counter()
     decode_times = t1 - t0
-    tpot = decode_times / (max_new_tokens)
+    tpot = decode_times / (max_new_tokens - 1)
     # print(f"TTFT (Prefill)   : {ttft*1000:.2f} ms")
     # print(f"TPOT (avg decode): {tpot*1000:.2f} ms")
     return {

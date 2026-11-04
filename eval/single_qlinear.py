@@ -16,7 +16,7 @@ from thirdparty.QQQ.w4a8_linear import W4A8Linear_QQQ
 
 PROFILING      = 0
 SAVE_REUSLT    = 1
-REPLAY_RESULT  = 1
+REPLAY_RESULT  = 0
 KAIROS_VERISON = 2
 
 if KAIROS_VERISON == 2:
@@ -42,8 +42,12 @@ if torch.cuda.is_available():
 # input_len = [2, 4, 8, 16, 32]
 # input_len_s = ['2', '4', '8', '16', '32']
 
-input_len = [2, 4, 8, 16, 4096, 8192, 16*1024, 32*1024]
-input_len_s = ['2', '4', '8', '16', '4k', '8k', '16k', '32k']
+# input_len = [2, 4, 8, 16, 4096, 8192, 16*1024, 32*1024]
+# input_len_s = ['2', '4', '8', '16', '4k', '8k', '16k', '32k']
+
+
+input_len = [1, 2, 4, 8, 16]
+input_len_s = ['1', '2', '4', '8', '16']
 
 kernel_name_list = ['Pytorch   FP16','Qserve    W4A8','QQQ       W4A8', 'AWQ      W4A16', 'Marlin   W4A16', 'SmoothQ   W8A8', 'Dynamic Linear']
 
@@ -51,37 +55,37 @@ args = parser.parse_args()
 model_type = args.model_type
 if model_type == 'qwen':
     preheat_time = 100; n = 500
-    save_path = 'qwen_single_test.pt'
+    save_path = 'qwen_single_test_1.pt'
     prof_path = './prof_qwen/'
     # shape_list = [(3584, 18944), (18944, 3584)] # Qwen2.5 7B
     shape_list = [(512, 3584), (3584, 3584), (3584, 18944), (18944, 3584)] # Qwen2.5 7B
 elif model_type == 'llama':
     preheat_time = 100; n = 500
-    save_path = 'llama_single_test.pt'
+    save_path = 'llama_single_test_1.pt'
     prof_path = './prof_llama/'
     # shape_list = [(4096, 14336), (14336, 4096)] # Llama-3 8B
     shape_list = [(1024, 4096), (4096, 4096), (4096, 14336), (14336, 4096)] # Llama-3 8B
 elif model_type == 'llama70':
     preheat_time = 100; n = 500
-    save_path = 'llama70_single_test.pt'
+    save_path = 'llama70_single_test_1.pt'
     prof_path = './prof_llama70/'
     shape_list = [(1024 , 8192), (8192, 8192), (8192, 28672), (28672, 8192)] # Llama-3 70B
 elif model_type == 'conformer':
     preheat_time = 300; n = 1000
-    save_path = 'conformer_single_test.pt'
+    save_path = 'conformer_single_test_1.pt'
     prof_path = './prof_conformer/'
     base_m = 50
     shape_list = [(2048, 256), (256, 2048), (256, 256), (512, 256)] 
     # shape_list = [(2048, 256), (256, 2048), (256, 256), (512, 256), (5000, 256)] 
 elif model_type == 'vit':
     preheat_time = 300; n = 1000
-    save_path = 'vit_single_test.pt'
+    save_path = 'vit_single_test_1.pt'
     prof_path = './prof_vit/'
     base_m = 197
     shape_list = [(768, 768), (2304, 768), (3072, 768), (768, 3072)] 
 elif model_type == 'bert':
     preheat_time = 100; n = 300
-    save_path = 'bert_single_test.pt'
+    save_path = 'bert_single_test_1.pt'
     prof_path = './prof_bert/'
     base_m = 197
     shape_list = [(768, 768), (2304, 768), (3072, 768), (768, 3072)] 
@@ -158,10 +162,6 @@ if __name__ == '__main__':
             s = w_shape[i]
             test(w_shape_proj[i], s[1], s[0], False)
             print('#' * 30)
-        # DELETE
-        for k in range(len(w_shape)):
-            for j in range(len(record[0][0])):
-                record[6][k][j] = min(record[6][k][j], record[4][k][j] + 0.0005)
         if SAVE_REUSLT:
             torch.save(record, save_path)
     else:

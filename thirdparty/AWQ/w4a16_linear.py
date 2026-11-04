@@ -68,7 +68,7 @@ class W4A16Linear_AWQ(torch.nn.Module):
         input = input.reshape(-1, intput_shape[-1])
         batch_token_len = input.shape[0]
         # batch_token_len = input.numel() // input.shape[-1]
-        if batch_token_len < 8:
+        if batch_token_len <= 8:
             out = awq_backend.gemv_forward_cuda_new(
                 input, self.qweight, self.scales, self.scaled_zeros,
                 batch_token_len, self.out_features, self.in_features, self.group_size)
@@ -76,7 +76,8 @@ class W4A16Linear_AWQ(torch.nn.Module):
             out = awq_backend.gemm_forward_cuda_new(
                 input, self.qweight, self.scales, self.scaled_zeros)
         if self.bias is not None:
-            out.add_(self.bias)
+            out += self.bias
+            # out.add_(self.bias)
         # if len(intput_shape) == 2: return out #DEBUG
         return out.reshape(intput_shape[0], intput_shape[1], -1)
         # return out.to(self.return_dtype)

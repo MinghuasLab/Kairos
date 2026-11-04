@@ -4,14 +4,31 @@ Our key idea is to automatically select the most suitable kernel for dynamic wor
 We first build an offline-profiled, hardware-specific lookup table that maps workload characteristics to the optimal kernel.
 Then, we propose an adaptive activation matching method to dynamically align activation bit-widths with the selected kernel.
 Finally, we propose a memory-efficient weight conversion method that retains only 4-bit weights in HBM and generates other weight formats on demand.
-Evaluations demonstrate that Kairos achieves up to 2.19$\times$ speedup in GEMM workloads, up to 1.51$\times$ faster time-to-first-token (TTFT) and 1.44$\times$ faster time-per-output-token (TPOT) than state-of-the-art systems in LLM serving.
+Evaluations demonstrate that Kairos achieves up to 2.19$\times$ speedup in GEMM workloads, up to 1.51$\times$ faster time-to-first-token (TTFT) and 1.44$\times$ faster time-per-output-token (TPOT) than state-of-the-art mpGEMM frameworks in LLM serving.
 
-![Overview of Kairos](images/Kairos_overview.jpg) 
-We decouple the storage of weights of linear layers and the computation of linear layers.
-Kairos consists of quantizer, profiler, and converter.
-The quantizer compresses a full precision LLM into a 4-bit LLM.
-The profiler explores the quantization strategy to construct a lookup table for each linear layer.
-The converter converts the weights and activations based on the given quantization strategy.
+# News
+02/11/2026 ✨: "Kairos: Switching Mixed-Precision GEMM Kernels for Dynamic AI Workloads" is accepted by HPCA 2027.
+
+![Overview of Kairos](images/overview.pdf) 
+Kairos consists of three core components.
+
+**Kernel Selection.**
+To profile the performance of different mpGEMM kernels, Kairos starts with an offline automatic profiling process.
+For each target model and GPU, Kairos profiles every unique weight shape across the expected range of M, measures the end‑to‑end latency of all candidate kernels including  switching overhead, and builds a per‑shape interval‑based lookup table (LUT) to record the most suitable one.
+At runtime, Kairos detects the current $M$ for each linear layer and queries the LUT to get the target kernel.
+
+**Activation Matching.**
+Once the target kernel is selected, Kairos adjusts the activation quantization path accordingly. 
+Since activations are dynamically quantized from the preceding operator’s FP16 output, Kairos propagates the required precision to the quantization operator to directly produce the needed format.
+When the target precision matches the original FP16, the quantization step is simply skipped. 
+This avoids redundant conversions of already‑quantized tensors.
+
+**Weight Conversion.**
+To support multiple kernel formats without duplicating weight storage, Kairos retains only a 4‑bit weight format in HBM for each linear layer.
+When a switch occurs, Kairos converts the base format on‑the‑fly to the target format using a lightweight dequantization or permute kernel. 
+The converted weights are temporarily cached, keeping the peak memory overhead within a negligible fraction of the model size.
+Finally, the selected mpGEMM kernel executes with all tensors correctly formatted.
+The decision and preparation overheads are consistently amortized by the subsequent kernel performance gain.
 
 ## Install
 Install environment
@@ -44,7 +61,6 @@ sh script/compile_kernel.sh
 
 ## Evaluation
 Speedup of Linear Layers Evaluation
-
 ```
 bash script/linear_layer_speedup.sh
 # echo DynamicLinear | python -m eval.eval_llm_linear --model_type llama
@@ -55,7 +71,7 @@ Speedup of Linear Layers Evaluation
 ```
 bash script/end2end_latency.sh
 ```
-
+<!-- 
 ## Performance
 Kairos provides 1.57×, and 1.63× speedups on average for LLaMa-3 8B, and 1.47×, and 1.61× speedups on average for Qwen2.5 7B A100 GPU, compared with SOTA W4A16 method MARLIN and W4A8 method Qserve, respectively.
 We also evaluate the performance of Kairos on Nvidia Jetson AGX Orin.
@@ -69,3 +85,4 @@ In addition, the performance of Kairos is optimal for some specific workloads.
 This is because the optimal strategies are different among the linear layers of different weight shapes.
 ![Speedup over cuBLAS of LLM linear layers](images/speedup.png) 
 ![Total Latency of LLM linear](images/end2endResult.png) 
+ -->

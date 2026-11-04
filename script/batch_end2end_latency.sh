@@ -2,14 +2,15 @@ mkdir log/
 mkdir log/end2end_batch/
 
 echo Test LLaMa-3-8B
-# echo None | python -m kairos.main --model_type llama --full 1 > log/end2end_batch/None_llama.log
-# echo W8A8Linear | python -m kairos.main --model_type llama > log/end2end_batch/W8A8Linear_llama.log
+echo None | python -m kairos.main --model_type llama --full 1 > log/end2end_batch/None_llama.log
+echo W8A8Linear | python -m kairos.main --model_type llama > log/end2end_batch/W8A8Linear_llama.log
 echo W4A16Linear | python -m kairos.main --model_type llama > log/end2end_batch/W4A16Linear_llama.log
 echo W4A16Linear_Marlin | python -m kairos.main --model_type llama > log/end2end_batch/W4A16Linear_Marlin_llama.log
-# echo W4A8Linear | python -m kairos.main --model_type llama > log/end2end_batch/W4A8Linear_llama.log
-# echo W4A8Linear_QQQ | python -m kairos.main --model_type llama > log/end2end_batch/W4A8Linear_QQQ_llama.log
+echo W4A8Linear | python -m kairos.main --model_type llama > log/end2end_batch/W4A8Linear_llama.log
+echo W4A8Linear_QQQ | python -m kairos.main --model_type llama > log/end2end_batch/W4A8Linear_QQQ_llama.log
 echo DynamicLinear | python -m kairos.main --model_type llama > log/end2end_batch/DynamicLinear_llama.log
-
+echo Best-Static | python -m kairos.main --model_type llama > log/end2end_batch/Best-Static_llama.log
+echo SwitchLinear | python -m kairos.main_ablation --model_type llama > log/end2end_batch/SwitchLinear_llama.log
 
 # echo Test Qwen2.5-Instruct-7B
 # echo None | python -m kairos.main --model_type qwen --full 1 > log/end2end_batch/None_qwen.log

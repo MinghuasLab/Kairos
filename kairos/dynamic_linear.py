@@ -114,12 +114,14 @@ class DynamicLinear(torch.nn.Module):
             q_linear.bias = linear.bias.clone().half()
         return q_linear
     
-    
     @torch.no_grad
     def forward(self, input:torch.Tensor) -> torch.Tensor:
         shape = input.shape
         input = input.reshape(-1, shape[-1])
         m = input.shape[-2] # input.numel() // input.shape[-1]
+        # if (m < 8): self.comp_type = COMP_TYPE_NAME['w4a16_gemv']
+        # else: self.comp_type = COMP_TYPE_NAME['w4a16_gemm']
+        # self.comp_type = COMP_TYPE_NAME['w4a16_gemv']
         if m != self.pre_m:
             self.pre_m = m
             self.comp_type = DynamicLinear.prof.get_comp_type(self.shape, m)

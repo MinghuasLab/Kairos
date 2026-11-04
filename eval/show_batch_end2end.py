@@ -9,7 +9,7 @@ model_type = ['llama']
 model_name = ['LLaMa3 8B']
 # model_name = ['Qwen2.5 7B']
 # model_name = ['LLaMa3 8B', 'Qwen2.5 7B']
-quant_type = ['W8A8Linear', 'W4A16Linear', 'W4A16Linear_Marlin', 'W4A8Linear', 'W4A8Linear_QQQ', 'DynamicLinear', 'None', 'PMPD']
+quant_type = ['W8A8Linear', 'W4A16Linear', 'W4A16Linear_Marlin', 'W4A8Linear', 'W4A8Linear_QQQ', 'DynamicLinear', 'None', 'PMPD', 'Best-Static']
 # quant_type = ['W8A8Linear', 'W4A16Linear', 'W4A16Linear_Marlin', 'W4A8Linear', 'W4A8Linear_QQQ', 'None']
 
 # 设置全局字体和样式
@@ -39,6 +39,7 @@ for idx in range(len(model_type)):
 
     for i in range(len(quant_type)):
         result_list[i] = load_json('./result/end2end_batch/'+model+'_'+quant_type[i]+'.json')
+        # print(len(result_list[i]))
         for res in result_list[i]:
             TTFT[i].append(res[0])
             TPOT[i].append(res[1])
@@ -46,6 +47,7 @@ for idx in range(len(model_type)):
             VRAM[i].append(res[3])
             TMP[i].append(0)
             TOTAL[i].append(0)
+    # exit(0)
 
     # OUTPUT_TOKEN_NUMS = 16
     # for i in range(len(TTFT)):
@@ -67,20 +69,20 @@ for idx in range(len(model_type)):
     x = np.arange(len(categories))
 
     def norm(a, b):
-        for idx in range(len(a)):
+        for idx in range(min(len(a), len(b))):
             a[idx] = a[idx] / b[idx]
 
     def divide(a, b):
-        for idx in range(len(a)):
+        for idx in range(min(len(a), len(b))):
             a[idx] =  b[idx] / a[idx]
             
-    # for i in range(8):
-    #     if (i == 6): continue
+    for i in range(len(quant_type)):
+        if (i == 6): continue
         # norm(TTFT[i], TTFT[6])
         # norm(TPOT[i], TPOT[6])
         # divide(TTFT[i], TTFT[6])
         # divide(TPOT[i], TPOT[6])
-        # norm(TTL[i], TTL[6])
+        norm(TTL[i], TTL[6])
         # pass
     
     def print_list(name:str, tlist, less=True):
@@ -112,6 +114,7 @@ for idx in range(len(model_type)):
     # plt.plot(x,  TTFT[6][0:5], '-oy', linewidth=2, label = 'FP16 by cuBLAS')
     plt.plot(x,   TTFT[5][0:5], '-or', linewidth=2, label = 'Kairos 4-bit')
     plt.plot(x,   TTFT[7][0:5], '-oy', linewidth=2, label = 'PMPD 4-bit')
+    plt.plot(x,   TTFT[8][0:5], ':*c', linewidth=2, label = 'Static-Best')
     plt.xticks(x, categories)
     plt.yticks()
     plt.legend(ncol=1, loc='upper left', handletextpad=0.3, columnspacing=0.5, handlelength=1, frameon=False)
@@ -135,6 +138,7 @@ for idx in range(len(model_type)):
     # plt.plot(x,  TPOT[6][0:5], '-oy', linewidth=2, label = 'FP16 by cuBLAS')
     plt.plot(x,   TPOT[5][0:5], '-or', linewidth=2, label = 'Kairos 4-bit')
     plt.plot(x,   TPOT[7][0:5], '-oy', linewidth=2, label = 'PMPD 4-bit')
+    plt.plot(x,   TPOT[8][0:5], ':*c', linewidth=2, label = 'Static-Best')
     plt.xticks(x, categories)
     plt.yticks()
 
@@ -167,6 +171,7 @@ for idx in range(len(model_type)):
     # plt.bar(x+break_width*3,   TTL[6][0:5],  width=width, color = '#3CBF8D',edgecolor='k', label = 'FP16 by cuBLAS')
     plt.bar(x+break_width*2,   TTL[5][0:5],  width=width, color = 'r',edgecolor='k', label = 'Kairos 4-bit')
     plt.bar(x+break_width*3,   TTL[7][0:5],  width=width, color = 'y',edgecolor='k', label = 'PMPD 4-bit')
+    plt.bar(x+break_width*4,   TTL[8][0:5],  width=width, color = 'y',edgecolor='k', label = 'Best-Static')
     plt.xticks(x, categories, fontsize=12)
     plt.yticks(fontsize=12)
     plt.ylim(0.75)
@@ -237,9 +242,9 @@ for idx in range(len(model_type)):
     
     plt.tight_layout()
     # plt.show()
-    # plt.savefig(f'./end2end_batch.svg', format='svg', dpi=300, bbox_inches='tight')
-    plt.savefig(f'./end2end_batch.pdf', format='pdf', dpi=300, bbox_inches='tight')
-    plt.savefig(f'./tmp.png', format='png', dpi=300, bbox_inches='tight')
+    plt.savefig(f'./tmp.png', dpi=300, bbox_inches='tight')
+    # plt.savefig(f'./image/e2e_batch/end2end_batch.pdf', format='pdf', dpi=300, bbox_inches='tight')
+    # plt.savefig(f'./images/e2e_batch/end2end_batch.png', format='png', dpi=300, bbox_inches='tight')
 
 
 # for i in range(len(input_len)):

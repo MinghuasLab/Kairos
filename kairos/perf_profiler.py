@@ -10,9 +10,6 @@ from utils.perf_eval import timer
 from kairos.quantization import *
 from kairos.dynamic_linear import DynamicLinear, COMP_TYPE_NAME
 
-# COMP_TYPE_NAME = {'w4a16_gemm':0, 'w4a16_gemv':1, 'w8a8':2, \
-#                   'w8a16_gemm':3, 'w8a16_gemv':4, 'fp16':5}     # W8A16 strategy is never used
-
 torch.manual_seed(seed=10)
 # print_flag = True
 print_flag = False

@@ -84,7 +84,9 @@ def _smooth_scale_block(layer, prev_op, child_name2quant:list, input,
         for name in child_name2quant:
             linear = name2linears[name]
             # NOTE: The q_config here must be the same as quant_model.
-            q_config = LinearQuantConfig(quant_strategy)
+            if quant_strategy == 'DynamicLinear':
+                q_config = LinearQuantConfig('W4A8Linear')
+            else: q_config = LinearQuantConfig(quant_strategy)
             q_linear = RealQuantLinearWithScale.from_module(linear, q_config, scales=scales)
             set_op_by_name(layer, name, q_linear)
         cur_out = detected_module(detected_input, **kwargs)

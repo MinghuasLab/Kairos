@@ -128,10 +128,6 @@ if __name__ == '__main__':
     else:
         sum_lat_list = torch.load(save_path)
     
-    # delete
-    if input_len[0] == 1:
-        sum_lat_list[6][0] = max(sum_lat_list[6][0], sum_lat_list[3][0])
-    
     record_acc_marlin = []
     record_acc_awq = []
     record_acc_qserve = []

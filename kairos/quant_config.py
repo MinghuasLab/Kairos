@@ -12,6 +12,7 @@ if args.version == '2':
     from kairos.dynamic_linear_v2 import DynamicLinear
 else:
     from kairos.dynamic_linear import DynamicLinear
+from kairos.switch_linear import SwitchLinear
 
 class TensorQuantConfig:
     @torch.no_grad
@@ -52,6 +53,10 @@ class LinearQuantConfig:
             self.x = TensorQuantConfig(8, 'S')
             self.w = TensorQuantConfig(4, 'A', group_size=128)
             self.from_module = DynamicLinear.from_module
-            
+        
+        elif quant_type == 'SwitchLinear':
+            self.x = TensorQuantConfig(8, 'S')
+            self.w = TensorQuantConfig(4, 'A', group_size=128)
+            self.from_module = SwitchLinear.from_module
         else:
             assert 0, print(f'No Supported Linear Type: {quant_type}.')

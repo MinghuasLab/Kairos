@@ -23,7 +23,7 @@ if cuda_device_count != 1:
     exit(0)
 
 if __name__ == '__main__':
-    torch.manual_seed(seed=42)
+    torch.manual_seed(seed=45)
     quant_config = None
     scales_meta_data = None
     args = parser.parse_args()
@@ -94,16 +94,17 @@ if __name__ == '__main__':
         inputs = tokenizer(prompt, return_tensors="pt").to(device)
         # inputs = generate_random_token_sequence(tokenizer, device, 1024 * 16)
 
-        # """ Perheat Model Generate """
-        # infer_model = InferModel(model, tokenizer)
-        # infer_model.infer(prompt, inputs, 100)
-        # exit(0)
+        """ Perheat Model Generate """
+        infer_model = InferModel(model, tokenizer)
+        infer_model.infer(prompt, inputs, 100)
+        exit(0)
 
         result_record = []
         if args.test_type == 'batch':
             print(f'Test {args.model_type} batch infer speed')
-            test_batch = [2, 4, 8, 16, 32, 64]
-            # test_batch = [8]
+            test_batch = [2, 4, 8, 16]
+            # test_batch = [2, 4, 8, 16, 32]
+            # test_batch = [8, 16, 32]
             # test_batch = [2, 4, 8, 16]
             input_len = 1024; output_len = 512
             for i in range(len(test_batch)):
@@ -133,9 +134,10 @@ if __name__ == '__main__':
             save_path = './result/end2end_batch/'+'test_batch.json'
             save_json(save_path, test_batch)
         else:
-            batch_size = 4
+            batch_size = 1
             print(f'Test {args.model_type} inference speed with batch size {batch_size}')
             # test_input_len = [1024, 1024*2, 1024*4, 1024*8, 1024*12, 1024*16, 1024*32, 1024*64]
+            # test_input_len = [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024]
             test_input_len = [512, 1024, 1024*2, 1024*4, 1024*8, 1024*12, 1024*16]
             for i in range(len(test_input_len)):
                 inputs = generate_random_token_sequence(tokenizer, device, test_input_len[i], batch_size)
@@ -143,7 +145,8 @@ if __name__ == '__main__':
                 reset_peak_memory_stats()
                 max_new_tokens = 512
                 print('------PERFORMANCE REPORT------')
-                res = eval_perf_v3(model, tokenizer, inputs,  max_new_tokens=max_new_tokens, batch_size=batch_size)
+                res = eval_perf(model, tokenizer, inputs,  max_new_tokens=max_new_tokens)
+                # res = eval_perf_v3(model, tokenizer, inputs,  max_new_tokens=max_new_tokens, batch_size=batch_size)
                 peak_mem_bytes = max_memory_allocated()
                 peak_mem_gb = peak_mem_bytes / (1024 ** 3)
                 ttft = res['ttft'] * 1000; tpot = res['tpot'] * 1000; real_out_len = res['num_tokens']

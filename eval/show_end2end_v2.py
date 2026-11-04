@@ -194,7 +194,7 @@ for idx in range(len(model_type)):
     # plt.ylim(1000)
     # plt.savefig(f'./{model}_end2end.svg', format='svg', dpi=300, bbox_inches='tight')
     plt.tight_layout()
-    plt.savefig(f'./end2end.pdf', format='pdf', dpi=300, bbox_inches='tight')
+    # plt.savefig(f'./end2end.pdf', format='pdf', dpi=300, bbox_inches='tight')
     plt.savefig(f'./tmp.png', format='png', dpi=300, bbox_inches='tight')
     # plt.show()
     exit(0)

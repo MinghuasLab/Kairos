@@ -158,10 +158,6 @@ if __name__ == '__main__':
             s = w_shape[i]
             test(w_shape_proj[i], s[1], s[0], False)
             print('#' * 30)
-        # DELETE
-        for k in range(len(w_shape)):
-            for j in range(len(record[0][0])):
-                record[6][k][j] = min(record[6][k][j], record[4][k][j] + 0.0005)
         if SAVE_REUSLT:
             torch.save(record, save_path)
     else:

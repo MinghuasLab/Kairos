@@ -5,12 +5,9 @@ from datasets import load_dataset
 from modelscope.msdatasets import MsDataset
 
 # from datasets import load_dataset
-
 # datasets = ["hotpotqa", "2wikimqa", "musique", "dureader", "narrativeqa", "qasper", "multifieldqa_en", "multifieldqa_zh", "gov_report", "qmsum", "vcsum", "trec", "nq", "triviaqa", "lsht", "passage_count", "passage_retrieval_en", "passage_retrieval_zh", "lcc", "repobench-p"]
-
 # for dataset in datasets:
 #     data = load_dataset('THUDM/LongBench', dataset, split='test')
-
 # exit(0)
 
 datasets = ['BurstGPT', 'ShareGPT', 'LongBench']

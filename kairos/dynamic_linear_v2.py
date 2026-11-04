@@ -210,6 +210,18 @@ class DynamicLinear(torch.nn.Module):
             exit(0)
         """
         return out
+    
+    @torch.no_grad
+    def _trans_weight_to_8(self):
+        tmp_weight = torch.empty(self.shape, dtype=torch.int8, device='cuda')
+        kairos_cuda_accel.dequant_interleaved_int4_to_int8(tmp_weight, self.qweight, 
+                                    self.scales_to8, self.scaled_zeros_to8, 128)
+    
+    @torch.no_grad
+    def _trans_weight_to_16(self):
+        tmp_weight = torch.empty(self.shape, dtype=torch.float16, device='cuda')
+        kairos_cuda_accel.dequant_interleaved_int4_to_fp16(tmp_weight, self.qweight, 
+                                    self.scales, self.scaled_zeros, 128)
 
     @torch.no_grad
     def extra_repr(self) -> str:
