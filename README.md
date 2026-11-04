@@ -4,15 +4,15 @@ Our key idea is to automatically select the most suitable kernel for dynamic wor
 We first build an offline-profiled, hardware-specific lookup table that maps workload characteristics to the optimal kernel.
 Then, we propose an adaptive activation matching method to dynamically align activation bit-widths with the selected kernel.
 Finally, we propose a memory-efficient weight conversion method that retains only 4-bit weights in HBM and generates other weight formats on demand.
-Evaluations demonstrate that Kairos achieves up to 2.19$\times$ speedup in GEMM workloads, up to 1.51$\times$ faster time-to-first-token (TTFT) and 1.44$\times$ faster time-per-output-token (TPOT) than state-of-the-art mpGEMM frameworks in LLM serving.
+Evaluations demonstrate that Kairos achieves up to 2.19× speedup in GEMM workloads, up to 1.51× faster time-to-first-token (TTFT) and 1.44× faster time-per-output-token (TPOT) than state-of-the-art mpGEMM frameworks in LLM serving.
 
 # News
 02/11/2026 ✨: "Kairos: Switching Mixed-Precision GEMM Kernels for Dynamic AI Workloads" is accepted by HPCA 2027.
 
 # Framework Architecture
-<img src="images/overview.png" width = 60%>
+<div align=center><img src="images/overview.png" width = 60%>
 <!-- ![Overview of Kairos](images/overview.png)  -->
-
+<div align=left>
 Kairos consists of three core components.
 
 **(1) Kernel Selection.**
@@ -95,7 +95,7 @@ It delivers an average throughput speedup of \(1.09\times\) over both \(W4A16\) 
 These results further confirm that runtime mpGEMM kernel switching effectively harnesses workload dynamism, not only across different input lengths but also across varying batch sizes.
 
 ## Ablation
-<img src="images/ablation/scatter_hbm_time.png" width = 60%>
+<div align=center> <img src="images/ablation/scatter_hbm_time.png" width = 40%><div align=left>
 <!-- ![Trade-off](images/ablation/scatter_hbm_time.png) -->
 To isolate the benefit of dynamic switching, the fidelity of LUT-based decisions, and the time--memory tradeoff, we fix the kernel portfolio, activation matching, GEMV/GEMM thresholds, and runtime framework across all configurations. 
 We compare five configurations:
@@ -116,8 +116,8 @@ resident in HBM.
 (5) Full Kairos: LUT-based selection and online conversion from the 4-bit base representation. 
 It stores only 4-bit weights in HBM and generates other formats on demand.
 
-Oracle achieves the lowest latency but the highest memory (2.45$\times$ FP16), confirming that fine-grained switching without format management is memory-prohibitive.
+Oracle achieves the lowest latency but the highest memory (2.45× FP16), confirming that fine-grained switching without format management is memory-prohibitive.
 LUT-Selection is only 1.7\% slower than Oracle, demonstrating high LUT fidelity, and requires lower memory because Oracle selects measured-best kernels outside the offline profiling set.
-Simple-Policy runs 2.3\% faster than Kairos but occupies 2.8$\times$ more memory. 
+Simple-Policy runs 2.3\% faster than Kairos but occupies 2.8× more memory. 
 Online weight conversion accounts for only 5.4\% of Kairos's total execution time. 
 With just 5\% more memory than static W4A16, Kairos achieves 93\% of Oracle's optimal performance, yielding an excellent time–memory trade-off.
